@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>관수 시스템 센서값</title>
+  </head>
+  <body>
+    <h1>관수 시스템 센서값</h1>
+    <p>유량계 값: <span id="flow_meter"></span></p>
+    <p>수압계 값: <span id="water_press"></span></p>
+    <p>모터 작동 유/무: <span id="motor_working"></span></p>
+    <p>시스템 오작동: <span id="system_warning"></span></p>
+
+    <script>
+      // 백엔드에서 데이터를 불러와서 해당 필드에 출력하는 함수
+      function updateFields(data) {
+        console.log(data.flow_meter);
+        document.querySelector('#flow_meter').textContent = data.flow_meter;
+        document.querySelector('#water_press').textContent = data.water_press;
+        document.querySelector('#motor_working').textContent = data.motor_working;
+        document.querySelector('#system_warning').textContent = data.system_warning;
+      }
+
+      // 데이터를 가져와서 필드를 업데이트하는 함수
+      function fetchData() {
+        fetch('http://localhost:8080/data')
+          .then(response => response.json())
+          .then(data => updateFields(data))
+          .catch(error => console.error(error));
+      }
+
+      // 초기화시 데이터 가져오기
+      fetchData();
+
+      // 1초마다 데이터 가져오기
+      setInterval(fetchData, 1000);
+    </script>
+  </body>
+</html>

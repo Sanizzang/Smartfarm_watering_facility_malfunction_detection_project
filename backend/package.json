@@ -1,0 +1,26 @@
+{
+  "name": "kstagram",
+  "version": "1.0.0",
+  "description": "instagram clone coding",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app"
+  },
+  "author": "Sanizzang",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-async-errors": "^3.1.1",
+    "express-validator": "^6.13.0",
+    "helmet": "^4.6.0",
+    "morgan": "^1.10.0",
+    "mysql2": "^2.3.3-rc.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
