@@ -1,2 +1,2 @@
-# instagram-clone
-A clone of the Instagram website
+## 스마트팜 관수 시설 오동작 탐지 프로젝트
+
