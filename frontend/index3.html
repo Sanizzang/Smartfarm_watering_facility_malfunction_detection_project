@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>스마트팜 모니터링 시스템</title>
+    <style>
+        /* 스타일링 코드 */
+        body {
+          font-family: Arial, sans-serif;
+        }
+        canvas {
+          max-width: 400px;
+        }
+      </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js 라이브러리 추가 -->
+</head>
+<body>
+    <h1>스마트팜 관수시스템 모니터링</h1>
+    <h2>유량계 값</h2>
+    <canvas id="flow-chart"></canvas>
+    <h2>수압계 값</h2>
+    <canvas id="water-press-chart"></canvas>
+    <h2>모터 작동 상태</h2>
+    <p id="motor-status"></p>
+    <h2>시스템 상태</h2>
+    <p id="system-status"></p>
+
+    <script>
+        function fetchSensorData() {
+            // 서버에서 데이터를 받아오는 비동기 요청
+            // 이 예시에서는 fetch() 함수를 사용하였으나, 실제 구현에 따라 다양한 방식으로 데이터를 받아올 수 있습니다.
+            fetch('http://localhost:8080/data')
+                .then(response => response.json())
+                .then(data => updateSensorData(data))
+                .catch(error => console.error('데이터를 받아오는 중 오류가 발생하였습니다:', error));
+        }
+
+        // 유량계 그래프를 위한 차트 설정
+        var flowChart = new Chart(document.getElementById('flow-chart'), {
+            type: 'line',
+            data: {
+                labels: [], // x축 레이블
+                datasets: [{
+                    label: '유량계 값', // 데이터셋 레이블
+                    data: [], // y축 데이터
+                    borderColor: 'blue', // 선 색상
+                    fill: false // 채우기 없음
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '시간' // x축 타이틀
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '유량계 값' // y축 타이틀
+                        }
+                    }
+                }
+            }
+        });
+
+        // 수압계 그래프를 위한 차트 설정
+        var waterPressChart = new Chart(document.getElementById('water-press-chart'), {
+            type: 'line',
+            data: {
+                labels: [], // x축 레이블
+                datasets: [{
+                    label: '수압계 값', // 데이터셋 레이블
+                    data: [], // y축 데이터
+                    fill: false, // 영역 채우기 여부
+                    borderColor: 'rgb(255, 99, 132)', // 선의 색상
+                    tension: 0.1 // 선의 강도
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '시간' // x축 타이틀
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '수압계 값' // y축 타이틀
+                        }
+                    }
+                }
+            }
+        });
+
+        // 센서 데이터를 그래프에 업데이트하는 함수
+        function updateChartData(flowData, waterPressData) {
+            // 현재 시간을 x축 레이블에 추가
+            var currentTime = new Date().toLocaleTimeString();
+            flowChart.data.labels.push(currentTime);
+            waterPressChart.data.labels.push(currentTime);
+
+            // 유량계 값과 수압계 값에 대한 데이터를 추가
+            flowChart.data.datasets[0].data.push(flowData);
+            waterPressChart.data.datasets[0].data.push(waterPressData);
+
+            // 최대 10개의 데이터만 유지하도록 설정
+            var maxDataLength = 10;
+            if (flowChart.data.labels.length > maxDataLength) {
+                flowChart.data.labels.shift();
+                flowChart.data.datasets[0].data.shift();
+            }
+            if (waterPressChart.data.labels.length > maxDataLength) {
+                waterPressChart.data.labels.shift();
+                waterPressChart.data.datasets[0].data.shift();
+            }
+
+            // 차트 업데이트
+            flowChart.update();
+            waterPressChart.update();
+        }
+
+        // 모터 작동 유무와 시스템 오작동을 표시하는 함수
+        function updateMotorAndSystemStatus(motorStatus, systemStatus) {
+            // 모터 작동 유무 표시
+            var motorStatusElement = document.getElementById('motor-status');
+            motorStatusElement.textContent = motorStatus ? '작동 중' : '정지';
+
+            // 시스템 오작동 표시
+            var systemStatusElement = document.getElementById('system-status');
+            systemStatusElement.textContent = systemStatus ? '오작동' : '정상';
+        }
+
+        // 센서 데이터 및 모터 작동 유무, 시스템 오작동 여부를 업데이트하는 함수
+        function updateSensorData(flow_data, water_press, motor_working, system_warning) {
+            updateChartData(flow_data, water_press);
+            updateMotorAndSystemStatus(motor_working, system_warning);
+        }
+
+        // 예시 데이터로 초기화
+        var initialFlowData = 0;
+        var initialWaterPressData = 0;
+        var initialMotorStatus = false;
+        var initialSystemStatus = false;
+        updateSensorData(initialFlowData, initialWaterPressData, initialMotorStatus, initialSystemStatus);
+
+        // 일정 주기로 센서 데이터를 업데이트하는 함수
+        function updateSensorDataPeriodically() {
+            // 5초마다 센서 데이터를 업데이트
+            setInterval(() => {
+                fetchSensorData();
+            }, 5000);
+        }
+
+        // 페이지 로드 시 초기화 함수 실행
+        window.onload = function() {
+            fetchSensorData();
+            updateSensorDataPeriodically();
+        };
+    </script>
+</body>
+</html>
