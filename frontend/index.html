@@ -1,39 +1,187 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>관수 시스템 센서값</title>
-  </head>
-  <body>
-    <h1>관수 시스템 센서값</h1>
-    <p>유량계 값: <span id="flow_meter"></span></p>
-    <p>수압계 값: <span id="water_press"></span></p>
-    <p>모터 작동 유/무: <span id="motor_working"></span></p>
-    <p>시스템 오작동: <span id="system_warning"></span></p>
+<head>
+  <title>스마트팜 관수시스템 모니터링</title>
+  <style>
+    /* 스타일링 코드 */
+    body {
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      max-width: 400px;
+    }
+    
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js 라이브러리 추가 -->
+</head>
+<body>
+    <h1>스마트팜 관수시스템 모니터링</h1>
+    <h2>유량계 값</h2>
+    <canvas id="flow-meter-chart"></canvas>
+    <h2>수압계 값</h2>
+    <canvas id="water-press-chart"></canvas>
+    <h2>모터 작동 상태</h2>
+    <p id="motor-status"></p>
+    <h2>시스템 상태</h2>
+    <p id="system-status"></p>
 
-    <script>
-      // 백엔드에서 데이터를 불러와서 해당 필드에 출력하는 함수
-      function updateFields(data) {
-        console.log(data.flow_meter);
-        document.querySelector('#flow_meter').textContent = data.flow_meter;
-        document.querySelector('#water_press').textContent = data.water_press;
-        document.querySelector('#motor_working').textContent = data.motor_working;
-        document.querySelector('#system_warning').textContent = data.system_warning;
+  <script>
+    // JavaScript 코드
+    // flow_meter, water_press, motor_working, system_warning 값은 서버로부터 받아와서 업데이트
+
+    function fetchSensorData() {
+            // 서버에서 데이터를 받아오는 비동기 요청
+            // 이 예시에서는 fetch() 함수를 사용하였으나, 실제 구현에 따라 다양한 방식으로 데이터를 받아올 수 있습니다.
+            fetch('http://localhost:8080/data')
+                .then(response => response.json())
+                .then(data => updateData(data))
+                .catch(error => console.error('데이터를 받아오는 중 오류가 발생하였습니다:', error));
+    }
+
+    var flowMeterChart = new Chart(document.getElementById('flow-meter-chart'), {
+      type: 'line', // 선 그래프
+      data: {
+        labels: [], // 라벨(시간, 날짜 등) 데이터 배열
+        datasets: [{
+          label: '유량계 값',
+          data: [], // 유량계 값 데이터 배열
+          borderColor: 'blue', // 선 색상
+          fill: false // 채우기 없음
+        }]
+      },
+      options: {
+        responsive: true,
+        title: {
+          display: true,
+          text: '유량계 값'
+        },
+        scales: {
+          x: {
+            display: true
+          },
+          y: {
+            display: true,
+            beginAtZero: true
+          }
+        }
       }
+    });
 
-      // 데이터를 가져와서 필드를 업데이트하는 함수
-      function fetchData() {
-        fetch('http://localhost:8080/data')
-          .then(response => response.json())
-          .then(data => updateFields(data))
-          .catch(error => console.error(error));
+    var waterPressChart = new Chart(document.getElementById('water-press-chart'), {
+      type: 'line', // 선 그래프
+      data: {
+        labels: [], // 라벨(시간, 날짜 등) 데이터 배열
+        datasets: [{
+          label: '수압계 값',
+          data: [], // 수압계 값 데이터 배열
+          borderColor: 'blue', // 선 색상
+          fill: false // 채우기 없음
+        }]
+      },
+      options: {
+        responsive: true,
+        title: {
+          display: true,
+          text: '수압계 값'
+        },
+        scales: {
+          x: {
+            display: true
+          },
+          y: {
+            display: true,
+            beginAtZero: true
+          }
+        }
       }
+    });
+    
+    function updateData(data) {
+       // 라벨(시간, 날짜 등) 데이터 배열 업데이트
+       var labels = flowMeterChart.data.labels;
+        var currentDateTime = new Date().toLocaleTimeString(); // 현재 시간을 문자열로 변환
+        labels.push(currentDateTime);
+        if (labels.length > 10) {
+            labels.shift(); // 최대 10개의 라벨만 유지하도록 설정
+        }
 
-      // 초기화시 데이터 가져오기
-      fetchData();
+        // 유량계 값 데이터 배열 업데이트
+        var flowMeterData = flowMeterChart.data.datasets[0].data;
+        var randomFlowMeterValue = data.flow_meter; // 유량계 값 가져오기 
+        flowMeterData.push(randomFlowMeterValue);
+        if (flowMeterData.length > 10) {
+            flowMeterData.shift(); // 최대 10개의 데이터만 유지하도록 설정
+        }
 
-      // 1초마다 데이터 가져오기
-      setInterval(fetchData, 1000);
-    </script>
-  </body>
+        // 라벨(시간, 날짜 등) 데이터 배열 업데이트
+       var labels = flowMeterChart.data.labels;
+        var currentDateTime = new Date().toLocaleTimeString(); // 현재 시간을 문자열로 변환
+        labels.push(currentDateTime);
+        if (labels.length > 10) {
+            labels.shift(); // 최대 10개의 라벨만 유지하도록 설정
+        }
+
+        // 유량계 값 데이터 배열 업데이트
+        var flowMeterData = flowMeterChart.data.datasets[0].data;
+        var randomFlowMeterValue = data.flow_meter; // 유량계 값 가져오기 
+        flowMeterData.push(randomFlowMeterValue);
+        if (flowMeterData.length > 10) {
+            flowMeterData.shift(); // 최대 10개의 데이터만 유지하도록 설정
+        }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+        // 라벨(시간, 날짜 등) 데이터 배열 업데이트
+        var labels = waterPressChart.data.labels;
+        var currentDateTime = new Date().toLocaleTimeString(); // 현재 시간을 문자열로 변환
+        labels.push(currentDateTime);
+        if (labels.length > 10) {
+            labels.shift(); // 최대 10개의 라벨만 유지하도록 설정
+        }
+
+        // 유량계 값 데이터 배열 업데이트
+        var waterPressData = waterPressChart.data.datasets[0].data;
+        var randomWaterPressValue = data.water_press; // 임의의 유량계 값 생성
+        waterPressData.push(randomWaterPressValue);
+        if (waterPressData.length > 10) {
+            waterPressData.shift(); // 최대 10개의 데이터만 유지하도록 설정
+        }
+
+        // 라벨(시간, 날짜 등) 데이터 배열 업데이트
+        var labels = waterPressChart.data.labels;
+        var currentDateTime = new Date().toLocaleTimeString(); // 현재 시간을 문자열로 변환
+        labels.push(currentDateTime);
+        if (labels.length > 10) {
+            labels.shift(); // 최대 10개의 라벨만 유지하도록 설정
+        }
+
+        // 유량계 값 데이터 배열 업데이트
+        var waterPressData = waterPressChart.data.datasets[0].data;
+        var randomWaterPressValue = data.water_press; // 임의의 유량계 값 생성
+        waterPressData.push(randomWaterPressValue);
+        if (waterPressData.length > 10) {
+            waterPressData.shift(); // 최대 10개의 데이터만 유지하도록 설정
+        }
+
+        // 그래프 업데이트
+        flowMeterChart.update();
+        waterPressChart.update();
+
+        var motorStatusElement = document.getElementById('motor-status');
+        motorStatusElement.textContent = data.motor_working ? '작동 중' : '정지';
+
+        // 시스템 오작동 표시
+        var systemStatusElement = document.getElementById('system-status');
+        systemStatusElement.textContent = data.system_warning ? '오작동' : '정상';
+    }
+
+    // flow_meter, water_press, motor_working, system_warning 값은 서버로부터 받아와서 업데이트
+    // 아래 예시에서는 임의의 값으로 업데이트
+    setInterval(fetchSensorData, 5000); // 1초마다 업데이트
+    
+    
+
+  </script>
+</body>
 </html>
