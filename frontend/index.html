@@ -6,24 +6,91 @@
     /* 스타일링 코드 */
     body {
       font-family: Arial, sans-serif;
+      background-color: #f1f1f1;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2 {
+      color: #008000;
     }
     canvas {
-      max-width: 400px;
+      max-width: 600px;
     }
-    
+    .title{
+      text-align: center;
+    }
+    .status{
+      display: flex;
+      flex-wrap: wrap;
+      flex-direction: row; /*수평 정렬*/
+      align-items: center;
+      justify-content: center;
+    }
+    .circle-motor{
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      background-color: #008000;
+    }
+    .circle-system{
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      background-color: #008000;
+    }
+    .chart{
+      display: flex;
+      flex-wrap: wrap;
+      flex-direction: row; /*수평 정렬*/
+      align-items: center;
+      justify-content: center;
+    }
+    .motor, .system {
+      margin: 10px;
+    }
+    .chart-data {
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-left: 20px;
+    }
+    #motor-status, #system-status {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js 라이브러리 추가 -->
 </head>
 <body>
-    <h1>스마트팜 관수시스템 모니터링</h1>
-    <h2>유량계 값</h2>
-    <canvas id="flow-meter-chart"></canvas>
-    <h2>수압계 값</h2>
-    <canvas id="water-press-chart"></canvas>
-    <h2>모터 작동 상태</h2>
-    <p id="motor-status"></p>
-    <h2>시스템 상태</h2>
-    <p id="system-status"></p>
+    <h1 class="title">스마트팜 관수시스템 모니터링</h1>
+    <div class="status">
+      <div class="motor">
+        <h2>모터 작동 상태</h2>
+        <p id="motor-status"></p>
+        <div class="circle-motor"></div>
+      </div>
+      <div class="system">
+        <h2>시스템 상태</h2>
+        <p id="system-status"></p>
+        <div class="circle-system"></div>
+      </div>
+    </div>
+
+    <div class="chart">
+      <div>
+        <div class="data-container">
+          <h2>유량계 값</h2>
+          <div class="chart-data" id="flow-meter-data">0</div>
+        </div>
+        <canvas id="flow-meter-chart"  height="400"></canvas>
+      </div>
+      <div>
+        <div class="data-container">
+          <h2>수압계 값</h2>
+          <div class="chart-data" id="water-press-data">0</div>
+        </div>
+        <canvas id="water-press-chart" height="400"></canvas>
+      </div>
+    </div>
 
   <script>
     // JavaScript 코드
@@ -97,23 +164,13 @@
     });
     
     function updateData(data) {
+       var flow = document.getElementById("flow-meter-data");
+       var water = document.getElementById("water-press-data");
+   
+       flow.innerText = data.flow_meter;
+       water.innerText = data.water_press;
+
        // 라벨(시간, 날짜 등) 데이터 배열 업데이트
-       var labels = flowMeterChart.data.labels;
-        var currentDateTime = new Date().toLocaleTimeString(); // 현재 시간을 문자열로 변환
-        labels.push(currentDateTime);
-        if (labels.length > 10) {
-            labels.shift(); // 최대 10개의 라벨만 유지하도록 설정
-        }
-
-        // 유량계 값 데이터 배열 업데이트
-        var flowMeterData = flowMeterChart.data.datasets[0].data;
-        var randomFlowMeterValue = data.flow_meter; // 유량계 값 가져오기 
-        flowMeterData.push(randomFlowMeterValue);
-        if (flowMeterData.length > 10) {
-            flowMeterData.shift(); // 최대 10개의 데이터만 유지하도록 설정
-        }
-
-        // 라벨(시간, 날짜 등) 데이터 배열 업데이트
        var labels = flowMeterChart.data.labels;
         var currentDateTime = new Date().toLocaleTimeString(); // 현재 시간을 문자열로 변환
         labels.push(currentDateTime);
@@ -136,7 +193,7 @@
         var labels = waterPressChart.data.labels;
         var currentDateTime = new Date().toLocaleTimeString(); // 현재 시간을 문자열로 변환
         labels.push(currentDateTime);
-        if (labels.length > 10) {
+        if (labels.length > 30) {
             labels.shift(); // 최대 10개의 라벨만 유지하도록 설정
         }
 
@@ -144,25 +201,10 @@
         var waterPressData = waterPressChart.data.datasets[0].data;
         var randomWaterPressValue = data.water_press; // 임의의 유량계 값 생성
         waterPressData.push(randomWaterPressValue);
-        if (waterPressData.length > 10) {
+        if (waterPressData.length > 30) {
             waterPressData.shift(); // 최대 10개의 데이터만 유지하도록 설정
         }
 
-        // 라벨(시간, 날짜 등) 데이터 배열 업데이트
-        var labels = waterPressChart.data.labels;
-        var currentDateTime = new Date().toLocaleTimeString(); // 현재 시간을 문자열로 변환
-        labels.push(currentDateTime);
-        if (labels.length > 10) {
-            labels.shift(); // 최대 10개의 라벨만 유지하도록 설정
-        }
-
-        // 유량계 값 데이터 배열 업데이트
-        var waterPressData = waterPressChart.data.datasets[0].data;
-        var randomWaterPressValue = data.water_press; // 임의의 유량계 값 생성
-        waterPressData.push(randomWaterPressValue);
-        if (waterPressData.length > 10) {
-            waterPressData.shift(); // 최대 10개의 데이터만 유지하도록 설정
-        }
 
         // 그래프 업데이트
         flowMeterChart.update();
@@ -170,15 +212,17 @@
 
         var motorStatusElement = document.getElementById('motor-status');
         motorStatusElement.textContent = data.motor_working ? '작동 중' : '정지';
+       
 
         // 시스템 오작동 표시
         var systemStatusElement = document.getElementById('system-status');
         systemStatusElement.textContent = data.system_warning ? '오작동' : '정상';
+
     }
 
     // flow_meter, water_press, motor_working, system_warning 값은 서버로부터 받아와서 업데이트
     // 아래 예시에서는 임의의 값으로 업데이트
-    setInterval(fetchSensorData, 5000); // 1초마다 업데이트
+    setInterval(fetchSensorData, 5000); // 5초마다 업데이트
     
     
 
