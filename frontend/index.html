@@ -26,17 +26,17 @@
       align-items: center;
       justify-content: center;
     }
-    .circle-motor{
+    #circle_motor{
       width:30px;
       height:30px;
       border-radius:50%;
-      background-color: #008000;
+      background-color: red;
     }
-    .circle-system{
+    #circle_system{
       width:30px;
       height:30px;
       border-radius:50%;
-      background-color: #008000;
+      background-color: red;
     }
     .chart{
       display: flex;
@@ -48,12 +48,12 @@
     .motor, .system {
       margin: 10px;
     }
-    .chart-data {
+    .chart_data {
       font-weight: bold;
       font-size: 1.2em;
       margin-left: 20px;
     }
-    #motor-status, #system-status {
+    #motor_status, #system_status {
       font-weight: bold;
       font-size: 1.2em;
     }
@@ -65,30 +65,30 @@
     <div class="status">
       <div class="motor">
         <h2>모터 작동 상태</h2>
-        <p id="motor-status"></p>
-        <div class="circle-motor"></div>
+        <p id="motor_status"></p>
+        <div id="circle_motor"></div>
       </div>
       <div class="system">
         <h2>시스템 상태</h2>
-        <p id="system-status"></p>
-        <div class="circle-system"></div>
+        <p id="system_status"></p>
+        <div id="circle_system"></div>
       </div>
     </div>
 
     <div class="chart">
       <div>
-        <div class="data-container">
+        <div class="data_container">
           <h2>유량계 값</h2>
-          <div class="chart-data" id="flow-meter-data">0</div>
+          <div class="chart_data" id="flow_meter_data">0</div>
         </div>
-        <canvas id="flow-meter-chart"  height="400"></canvas>
+        <canvas id="flow_meter_chart"  height="400"></canvas>
       </div>
       <div>
-        <div class="data-container">
+        <div class="data_container">
           <h2>수압계 값</h2>
-          <div class="chart-data" id="water-press-data">0</div>
+          <div class="chart_data" id="water_press_data">0</div>
         </div>
-        <canvas id="water-press-chart" height="400"></canvas>
+        <canvas id="water_press_chart" height="400"></canvas>
       </div>
     </div>
 
@@ -98,14 +98,15 @@
 
     function fetchSensorData() {
             // 서버에서 데이터를 받아오는 비동기 요청
-            // 이 예시에서는 fetch() 함수를 사용하였으나, 실제 구현에 따라 다양한 방식으로 데이터를 받아올 수 있습니다.
             fetch('http://localhost:8080/data')
                 .then(response => response.json())
                 .then(data => updateData(data))
                 .catch(error => console.error('데이터를 받아오는 중 오류가 발생하였습니다:', error));
     }
+    
+    fetchSensorData()
 
-    var flowMeterChart = new Chart(document.getElementById('flow-meter-chart'), {
+    var flowMeterChart = new Chart(document.getElementById('flow_meter_chart'), {
       type: 'line', // 선 그래프
       data: {
         labels: [], // 라벨(시간, 날짜 등) 데이터 배열
@@ -134,7 +135,7 @@
       }
     });
 
-    var waterPressChart = new Chart(document.getElementById('water-press-chart'), {
+    var waterPressChart = new Chart(document.getElementById('water_press_chart'), {
       type: 'line', // 선 그래프
       data: {
         labels: [], // 라벨(시간, 날짜 등) 데이터 배열
@@ -164,8 +165,8 @@
     });
     
     function updateData(data) {
-       var flow = document.getElementById("flow-meter-data");
-       var water = document.getElementById("water-press-data");
+       var flow = document.getElementById("flow_meter_data");
+       var water = document.getElementById("water_press_data");
    
        flow.innerText = data.flow_meter;
        water.innerText = data.water_press;
@@ -210,13 +211,20 @@
         flowMeterChart.update();
         waterPressChart.update();
 
-        var motorStatusElement = document.getElementById('motor-status');
+        // 모터 상태 표시
+        var motorStatusElement = document.getElementById('motor_status');
         motorStatusElement.textContent = data.motor_working ? '작동 중' : '정지';
+
+        var motorCircle = document.getElementById('circle_motor');
+        motorCircle.style.backgroundColor = data.motor_working ? 'blue' : 'red'
        
 
         // 시스템 오작동 표시
-        var systemStatusElement = document.getElementById('system-status');
+        var systemStatusElement = document.getElementById('system_status');
         systemStatusElement.textContent = data.system_warning ? '오작동' : '정상';
+
+        var systemCircle = document.getElementById('circle_system');
+        systemCircle.style.backgroundColor = data.system_warning ? 'red' : 'blue'
 
     }
 
