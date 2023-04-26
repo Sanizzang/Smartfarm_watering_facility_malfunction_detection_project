@@ -95,17 +95,26 @@
   <script>
     // JavaScript 코드
     // flow_meter, water_press, motor_working, system_warning 값은 서버로부터 받아와서 업데이트
-
     function fetchSensorData() {
             // 서버에서 데이터를 받아오는 비동기 요청
             fetch('http://localhost:8080/data')
                 .then(response => response.json())
-                .then(data => updateData(data))
+                .then(data => {
+                  console.log(data);
+                  updateData(data)
+                })
                 .catch(error => console.error('데이터를 받아오는 중 오류가 발생하였습니다:', error));
     }
     
     fetchSensorData()
 
+    const socket = new WebSocket('ws://localhost:8080');
+
+    socket.onmessage = function(event) {
+      console.log(JSON.parse(event.data));
+      updateData(JSON.parse(event.data));
+    };
+    
     var flowMeterChart = new Chart(document.getElementById('flow_meter_chart'), {
       type: 'line', // 선 그래프
       data: {
@@ -227,12 +236,6 @@
         systemCircle.style.backgroundColor = data.system_warning ? 'red' : 'blue'
 
     }
-
-    // flow_meter, water_press, motor_working, system_warning 값은 서버로부터 받아와서 업데이트
-    // 아래 예시에서는 임의의 값으로 업데이트
-    setInterval(fetchSensorData, 5000); // 5초마다 업데이트
-    
-    
 
   </script>
 </body>

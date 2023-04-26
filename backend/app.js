@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import dataRouter from './router/data.js';
 import { config } from './config.js';
+import { WebSocketServer } from 'ws';
 
 const app = express();
 
@@ -24,4 +25,11 @@ app.use((error, req, res, next) => {
     res.sendStatus(500);
 });
 
-app.listen(config.port);
+const httpServer = app.listen(config.port);
+const socketIO = new WebSocketServer({ server: httpServer });
+
+socketIO.on('connection', (socket) => {
+    console.log('client on');
+});
+
+export { app, socketIO };
